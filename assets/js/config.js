@@ -19,6 +19,7 @@ const firebaseReady = (async () => {
     await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js");
   const authSdk =
     await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js");
+<<<<<<< HEAD
   const firestoreSdk =
     await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js");
   const firebaseApi = await import("./firebase-api.js");
@@ -41,6 +42,11 @@ const firebaseReady = (async () => {
     });
   });
   return { app, appSdk, auth, authSdk, db, firestoreSdk, firebaseApi };
+=======
+  const app = appSdk.initializeApp(firebaseConfig);
+  const auth = authSdk.getAuth(app);
+  return { auth, authSdk };
+>>>>>>> 4dba2c479cc71a1b85a56d73b8a823cf1dd36aba
 })();
 
 const themeStorageKey = "study-hub-theme";
@@ -78,6 +84,7 @@ document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
 const apiClient = {
   async post(url, formData) {
     try {
+<<<<<<< HEAD
       const context = await firebaseReady;
       const payload = Object.fromEntries(formData.entries());
       const group = new URL(url, window.location.href).pathname
@@ -93,6 +100,31 @@ const apiClient = {
       const data =
         result.success === undefined ? { success: true, ...result } : result;
       return { status: data.status || (data.success ? 200 : 400), data };
+=======
+      const { auth, authSdk } = await firebaseReady;
+      const payload = Object.fromEntries(formData.entries());
+
+      if (payload.operation === "login") {
+        const resolved = await request(url, {
+          operation: "resolveLogin",
+          identifier: payload.identifier,
+        });
+        if (!resolved.data.success) return resolved;
+        await authSdk.signInWithEmailAndPassword(
+          auth,
+          resolved.data.email,
+          payload.password,
+        );
+        return request(url, { operation: "me" }, auth.currentUser);
+      }
+
+      if (payload.operation === "logout") {
+        await authSdk.signOut(auth);
+        return { status: 200, data: { success: true, message: "Logged out." } };
+      }
+
+      return request(url, payload, auth.currentUser);
+>>>>>>> 4dba2c479cc71a1b85a56d73b8a823cf1dd36aba
     } catch (err) {
       return {
         status: 0,
@@ -102,6 +134,23 @@ const apiClient = {
   },
 };
 
+<<<<<<< HEAD
+=======
+async function request(url, payload, user) {
+  const headers = { "Content-Type": "application/json" };
+  if (user) headers.Authorization = `Bearer ${await user.getIdToken()}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+  });
+  const data = await res
+    .json()
+    .catch(() => ({ success: false, message: "Invalid server response." }));
+  return { status: res.status, data };
+}
+
+>>>>>>> 4dba2c479cc71a1b85a56d73b8a823cf1dd36aba
 // Small helper: build a FormData from a plain object, used all over app.js.
 function toFormData(obj) {
   const fd = new FormData();

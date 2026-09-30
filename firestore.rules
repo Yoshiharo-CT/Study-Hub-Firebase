@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -226,4 +227,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
   }
+=======
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+>>>>>>> 4dba2c479cc71a1b85a56d73b8a823cf1dd36aba
 }
