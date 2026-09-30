@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Hub | Login</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body>
+    <div class="login-shell">
+      <div class="login-hero">
+        <div class="brand-mark">SH</div>
+        <h1>Welcome to Study Hub.</h1>
+        <p>Sign in to Study Hub or create an account to get started.</p>
+      </div>
+
+      <div class="login-side">
+        <div class="login-card">
+          <h2>Login</h2>
+
+          <div class="mode-switch" aria-label="Account action">
+            <button type="button" class="mode-btn active" data-mode="login">
+              Login
+            </button>
+            <button type="button" class="mode-btn" data-mode="register">
+              Create account
+            </button>
+          </div>
+
+          <form id="form-login" class="login-form active">
+            <label
+              >Username, phone number, or email
+              <input type="text" id="login-identifier" required />
+            </label>
+            <label
+              >Password
+              <input type="password" id="login-password" required />
+            </label>
+            <button type="submit" class="primary">Login</button>
+          </form>
+
+          <!-- New accounts are assigned the customer account type automatically. -->
+          <form id="form-register" class="login-form">
+            <div class="form-grid" style="padding: 0; border: none">
+              <label
+                >First name<input type="text" id="reg-first-name" required
+              /></label>
+              <label
+                >Last name<input type="text" id="reg-last-name" required
+              /></label>
+              <label
+                >Phone number<input type="text" id="reg-phone" required
+              /></label>
+              <label>Email<input type="email" id="reg-email" required /></label>
+              <label
+                >Password (min. 6 characters)<input
+                  type="password"
+                  id="reg-password"
+                  required
+                  minlength="6"
+              /></label>
+            </div>
+            <button type="submit" class="primary">Create account</button>
+            <button type="button" class="small-link" id="go-member-login">
+              Already have an account? Sign in
+            </button>
+          </form>
+
+          <div class="form-msg" id="login-msg"></div>
+        </div>
+        <button
+          class="theme-toggle"
+          type="button"
+          data-theme-toggle
+          aria-label="Switch to light theme"
+          aria-pressed="false"
+          title="Switch to light theme"
+        >
+          ☼
+        </button>
+      </div>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script>
+      const msgEl = document.getElementById("login-msg");
+      function showMsg(text, ok) {
+        msgEl.textContent = text;
+        msgEl.className = "form-msg " + (ok ? "ok" : "error");
+      }
+
+      function switchMode(mode) {
+        document
+          .querySelectorAll(".mode-btn")
+          .forEach((b) =>
+            b.classList.toggle("active", b.dataset.mode === mode),
+          );
+        document
+          .querySelectorAll(".login-form")
+          .forEach((f) => f.classList.remove("active"));
+        document.getElementById("form-" + mode).classList.add("active");
+        msgEl.textContent = "";
+      }
+      document
+        .querySelectorAll(".mode-btn")
+        .forEach((b) =>
+          b.addEventListener("click", () => switchMode(b.dataset.mode)),
+        );
+      document
+        .getElementById("go-member-login")
+        .addEventListener("click", () => switchMode("login"));
+
+      // Account type is resolved from the matching username, email, or phone.
+      document
+        .getElementById("form-login")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const identifier = document.getElementById("login-identifier").value;
+          const password = document.getElementById("login-password").value;
+          const fd = new FormData();
+          fd.append("operation", "login");
+          fd.append("identifier", identifier);
+          fd.append("password", password);
+          const res = await apiClient.post(`${baseApiUrl}/auth.php`, fd);
+          if (res.data.success) {
+            if (res.data.account_type === "staff") {
+              showMsg("Login successful. Redirecting…", true);
+              setTimeout(() => (window.location.href = "index.html"), 400);
+            } else {
+              showMsg(
+                "Login successful. Please continue with the front desk.",
+                true,
+              );
+            }
+          } else {
+            showMsg(res.data.message, false);
+          }
+        });
+
+      // New accounts are always registered as customers.
+      document
+        .getElementById("form-register")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const fd = new FormData();
+          fd.append("operation", "memberRegister");
+          fd.append(
+            "first_name",
+            document.getElementById("reg-first-name").value,
+          );
+          fd.append(
+            "last_name",
+            document.getElementById("reg-last-name").value,
+          );
+          fd.append("phone_number", document.getElementById("reg-phone").value);
+          fd.append("email", document.getElementById("reg-email").value);
+          fd.append("password", document.getElementById("reg-password").value);
+          const res = await apiClient.post(`${baseApiUrl}/auth.php`, fd);
+          if (res.data.success) {
+            showMsg(
+              "Account created. Please continue with the front desk.",
+              true,
+            );
+            e.target.reset();
+          } else {
+            showMsg(res.data.message, false);
+          }
+        });
+    </script>
+  </body>
+</html>

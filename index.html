@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Hub | Space Availability &amp; Reservation System</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SH</div>
+        <div class="brand-text">
+          <h1>Study Hub</h1>
+          <span>Front desk console</span>
+        </div>
+      </div>
+
+      <nav class="tabs" id="tabs">
+        <button
+          class="tab-btn active"
+          data-perm="dashboard"
+          data-target="panel-dashboard"
+          style="--dot: #7c6df2"
+        >
+          <span class="tab-dot"></span>Dashboard
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="customers"
+          data-target="panel-customers"
+          style="--dot: #22c55e"
+        >
+          <span class="tab-dot"></span>Customers
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="spaces"
+          data-target="panel-spaces"
+          style="--dot: #06b6d4"
+        >
+          <span class="tab-dot"></span>Spaces
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="maintenance"
+          data-target="panel-maintenance"
+          style="--dot: #06b6d4"
+        >
+          <span class="tab-dot"></span>Maintenance
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="reservations"
+          data-target="panel-reservations"
+          style="--dot: #f59e0b"
+        >
+          <span class="tab-dot"></span>Reservations
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="walkins"
+          data-target="panel-walkins"
+          style="--dot: #f59e0b"
+        >
+          <span class="tab-dot"></span>Walk-in queue
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="sessions"
+          data-target="panel-sessions"
+          style="--dot: #ef4444"
+        >
+          <span class="tab-dot"></span>Sessions
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="orders"
+          data-target="panel-orders"
+          style="--dot: #ec4899"
+        >
+          <span class="tab-dot"></span>Orders (POS)
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="promotions"
+          data-target="panel-promotions"
+          style="--dot: #ec4899"
+        >
+          <span class="tab-dot"></span>Promotions
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="billing"
+          data-target="panel-billing"
+          style="--dot: #3b82f6"
+        >
+          <span class="tab-dot"></span>Billing
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="payments"
+          data-target="panel-payments"
+          style="--dot: #10b981"
+        >
+          <span class="tab-dot"></span>Payments
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="staff"
+          data-target="panel-staff"
+          style="--dot: #94a3b8"
+        >
+          <span class="tab-dot"></span>Staff
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="reports"
+          data-target="panel-reports"
+          style="--dot: #94a3b8"
+        >
+          <span class="tab-dot"></span>Reports &amp; Audit
+        </button>
+        <button
+          class="tab-btn"
+          data-perm="notifications"
+          data-target="panel-notifications"
+          style="--dot: #7c6df2"
+        >
+          <span class="tab-dot"></span>Notifications
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="staff-identity">
+          <span class="staff-avatar" id="staff-avatar" aria-hidden="true"
+            >SH</span
+          >
+          <div class="staff-details">
+            <strong id="staff-name-badge">Loading…</strong>
+            <span id="staff-role-badge">Loading role…</span>
+          </div>
+        </div>
+        <div class="sidebar-actions">
+          <button
+            class="theme-toggle"
+            type="button"
+            data-theme-toggle
+            aria-label="Switch to light theme"
+            aria-pressed="false"
+            title="Switch to light theme"
+          >
+            ☼
+          </button>
+          <button
+            class="logout-btn"
+            id="btn-logout"
+            type="button"
+            title="Log out"
+          >
+            <span aria-hidden="true">↪</span>
+            <span>Log out</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-wrap">
+      <main>
+        <!-- DASHBOARD -->
+        <section id="panel-dashboard" class="panel active">
+          <h2>Today at a glance</h2>
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="hint">Spaces occupied</div>
+              <div class="kpi-value" id="kpi-occupied">–</div>
+            </div>
+            <div class="kpi-card">
+              <div class="hint">Spaces available</div>
+              <div class="kpi-value" id="kpi-available">–</div>
+            </div>
+            <div class="kpi-card">
+              <div class="hint">Active sessions</div>
+              <div class="kpi-value" id="kpi-sessions">–</div>
+            </div>
+            <div class="kpi-card">
+              <div class="hint">Pending reservations today</div>
+              <div class="kpi-value" id="kpi-reservations">–</div>
+            </div>
+            <div class="kpi-card">
+              <div class="hint">Walk-ins waiting</div>
+              <div class="kpi-value" id="kpi-waiting">–</div>
+            </div>
+            <div class="kpi-card">
+              <div class="hint">Revenue today</div>
+              <div class="kpi-value" id="kpi-revenue">–</div>
+            </div>
+          </div>
+          <h2>Live space status</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Space</th>
+                <th>Type</th>
+                <th>Capacity</th>
+                <th>Rate/hr</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-spaces-table"></tbody>
+          </table>
+        </section>
+
+        <!-- CUSTOMERS -->
+        <section id="panel-customers" class="panel">
+          <h2>Customers</h2>
+          <p class="hint">
+            Guests sign themselves up on the login page; use this form only to
+            log a customer manually.
+          </p>
+          <form id="customer-form">
+            <div class="form-grid">
+              <label
+                >First name<input type="text" id="cust-first-name" required
+              /></label>
+              <label
+                >Last name<input type="text" id="cust-last-name" required
+              /></label>
+              <label
+                >Phone number<input type="text" id="cust-phone" required
+              /></label>
+              <label
+                >Email<input type="email" id="cust-email" required
+              /></label>
+            </div>
+            <button type="submit" class="primary">Add customer</button>
+            <p class="hint" id="customer-msg"></p>
+          </form>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Account</th>
+              </tr>
+            </thead>
+            <tbody id="customers-table"></tbody>
+          </table>
+        </section>
+
+        <!-- SPACES -->
+        <section id="panel-spaces" class="panel">
+          <h2>Space types</h2>
+          <form id="space-type-form">
+            <div class="form-grid">
+              <label
+                >Type name<input type="text" id="type-name" required
+              /></label>
+              <label
+                >Base rate / hour<input
+                  type="number"
+                  id="type-rate"
+                  step="0.01"
+                  min="0"
+                  required
+              /></label>
+              <label
+                >Default capacity<input
+                  type="number"
+                  id="type-capacity"
+                  min="1"
+                  value="1"
+                  required
+              /></label>
+              <label>Description<input type="text" id="type-desc" /></label>
+            </div>
+            <button type="submit" class="primary">Add type</button>
+          </form>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Rate/hr</th>
+                <th>Capacity</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody id="space-types-table"></tbody>
+          </table>
+
+          <h2>Study spaces</h2>
+          <form id="space-form">
+            <div class="form-grid">
+              <label
+                >Space type<select id="space-type-select" required></select
+              ></label>
+              <label
+                >Space name<input type="text" id="space-name" required
+              /></label>
+              <label
+                >Capacity<input
+                  type="number"
+                  id="space-capacity"
+                  min="1"
+                  value="1"
+                  required
+              /></label>
+            </div>
+            <button type="submit" class="primary">Add space</button>
+            <p class="hint" id="space-msg"></p>
+          </form>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Capacity</th>
+                <th>Rate/hr</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="spaces-table"></tbody>
+          </table>
+        </section>
+
+        <!-- MAINTENANCE -->
+        <section id="panel-maintenance" class="panel">
+          <h2>Schedule space maintenance</h2>
+          <form id="maintenance-form">
+            <div class="form-grid">
+              <label>Space<select id="maint-space" required></select></label>
+              <label
+                >Start<input type="datetime-local" id="maint-start" required
+              /></label>
+              <label
+                >End<input type="datetime-local" id="maint-end" required
+              /></label>
+              <label>Reason<input type="text" id="maint-reason" /></label>
+            </div>
+            <button type="submit" class="primary">Schedule</button>
+            <p class="hint" id="maintenance-msg"></p>
+          </form>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Space</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="maintenance-table"></tbody>
+          </table>
+        </section>
+
+        <!-- RESERVATIONS -->
+        <section id="panel-reservations" class="panel">
+          <h2>Check availability</h2>
+          <div class="form-grid">
+            <label>Date<input type="date" id="avail-date" /></label>
+            <label>Start time<input type="time" id="avail-start" /></label>
+            <label>End time<input type="time" id="avail-end" /></label>
+          </div>
+          <button type="button" class="primary" id="btn-check-availability">
+            Check availability
+          </button>
+          <table>
+            <thead>
+              <tr>
+                <th>Space</th>
+                <th>Type</th>
+                <th>Capacity</th>
+                <th>Rate/hr</th>
+              </tr>
+            </thead>
+            <tbody id="availability-table"></tbody>
+          </table>
+
+          <h2>New reservation</h2>
+          <form id="reservation-form">
+            <div class="form-grid">
+              <label
+                >Customer<select id="res-customer" required></select
+              ></label>
+              <label>Space<select id="res-space" required></select></label>
+              <label>Date<input type="date" id="res-date" required /></label>
+              <label
+                >Start time<input type="time" id="res-start" required
+              /></label>
+              <label>End time<input type="time" id="res-end" required /></label>
+              <label
+                >Number of people<input
+                  type="number"
+                  id="res-people"
+                  min="1"
+                  value="1"
+                  required
+              /></label>
+            </div>
+            <button type="submit" class="primary">Create reservation</button>
+            <p class="hint" id="reservation-msg"></p>
+          </form>
+          <h2>All reservations</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Space</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>People</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="reservations-table"></tbody>
+          </table>
+        </section>
+
+        <!-- WALK-IN QUEUE -->
+        <section id="panel-walkins" class="panel">
+          <h2>Add to walk-in queue</h2>
+          <p class="hint">
+            Use this when a walk-in customer arrives and no matching space is
+            free right now.
+          </p>
+          <form id="walkin-form">
+            <div class="form-grid">
+              <label
+                >Customer<select id="walkin-customer" required></select
+              ></label>
+              <label
+                >Desired space type<select id="walkin-type" required></select
+              ></label>
+            </div>
+            <button type="submit" class="primary">Add to queue</button>
+            <p class="hint" id="walkin-msg"></p>
+          </form>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Space type</th>
+                <th>Queued at</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="walkin-table"></tbody>
+          </table>
+        </section>
+
+        <!-- SESSIONS -->
+        <section id="panel-sessions" class="panel">
+          <h2>Check in</h2>
+          <form id="checkin-form">
+            <div class="form-grid">
+              <label
+                >Customer<select id="checkin-customer" required></select
+              ></label>
+              <label>Space<select id="checkin-space" required></select></label>
+              <label
+                >Reservation (automatic)<input
+                  type="text"
+                  id="checkin-reservation-display"
+                  placeholder="No active reservation"
+                  readonly
+              /></label>
+            </div>
+            <button type="submit" class="primary">Check in</button>
+            <p class="hint" id="checkin-msg"></p>
+          </form>
+          <h2>Active sessions</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Space</th>
+                <th>Check-in</th>
+                <th>Wi-Fi password</th>
+                <th>Fee so far</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="active-sessions-table"></tbody>
+          </table>
+        </section>
+
+        <!-- ORDERS / POS -->
+        <section id="panel-orders" class="panel">
+          <h2>New order</h2>
+          <div class="form-grid">
+            <label
+              >Customer<select id="order-customer" required></select
+            ></label>
+            <label
+              >Staff (order taken by)<select id="order-staff" required></select
+            ></label>
+            <label
+              >Active session (automatic)<input
+                type="text"
+                id="order-session-display"
+                placeholder="Select a customer"
+                readonly
+            /></label>
+          </div>
+          <div class="order-row">
+            <label>Product<select id="order-product"></select></label>
+            <label
+              >Quantity<input type="number" id="order-qty" min="1" value="1"
+            /></label>
+            <div></div>
+            <button type="button" class="primary" id="btn-add-cart">
+              Add to cart
+            </button>
+            <div id="printing-fields">
+              <label
+                >Paper size<select id="print-paper-size" required></select
+              ></label>
+              <label
+                >Print type<select id="print-type" required></select
+              ></label>
+              <label
+                >Page count<input
+                  type="number"
+                  id="print-page-count"
+                  min="1"
+                  value="1"
+              /></label>
+            </div>
+          </div>
+          <div id="cart-list"></div>
+          <div class="total-line">
+            Total: ₱<span id="cart-total">0.00</span>
+          </div>
+          <button type="button" class="primary" id="btn-place-order">
+            Place order
+          </button>
+          <p class="hint" id="order-msg"></p>
+
+          <h2>All orders</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Staff</th>
+                <th>Date/time</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table"></tbody>
+          </table>
+        </section>
+
+        <!-- PROMOTIONS -->
+        <section id="panel-promotions" class="panel">
+          <h2>Add promotion</h2>
+          <form id="promo-form">
+            <div class="form-grid">
+              <label>Code<input type="text" id="promo-code" required /></label>
+              <label>Description<input type="text" id="promo-desc" /></label>
+              <label
+                >Type
+                <select id="promo-type">
+                  <option value="percent">Percent</option>
+                  <option value="fixed">Fixed amount</option>
+                </select>
+              </label>
+              <label
+                >Value<input
+                  type="number"
+                  id="promo-value"
+                  step="0.01"
+                  min="0"
+                  required
+              /></label>
+              <label
+                >Valid from<input type="date" id="promo-from" required
+              /></label>
+              <label
+                >Valid to<input type="date" id="promo-to" required
+              /></label>
+            </div>
+            <button type="submit" class="primary">Add promotion</button>
+            <p class="hint" id="promo-msg"></p>
+          </form>
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Valid</th>
+                <th>Active</th>
+              </tr>
+            </thead>
+            <tbody id="promotions-table"></tbody>
+          </table>
+        </section>
+
+        <!-- BILLING -->
+        <section id="panel-billing" class="panel">
+          <h2>Create billing transaction</h2>
+          <form id="billing-form">
+            <div class="form-grid">
+              <label
+                >Customer<select id="billing-customer" required></select
+              ></label>
+              <label
+                >Checked-out session (optional)<select
+                  id="billing-session-id"
+                ></select
+              ></label>
+              <label
+                >Unbilled order (optional)<select id="billing-order-id"></select
+              ></label>
+              <label
+                >Promotion (optional)<select id="billing-promo"></select
+              ></label>
+              <p class="hint">
+                Reservation details are linked automatically to the selected
+                session.
+              </p>
+            </div>
+            <button type="submit" class="primary">Create transaction</button>
+            <p class="hint" id="billing-msg"></p>
+          </form>
+          <h2>All transactions</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Subtotal</th>
+                <th>Discount</th>
+                <th>Tax</th>
+                <th>Total</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-table"></tbody>
+          </table>
+        </section>
+
+        <!-- PAYMENTS -->
+        <section id="panel-payments" class="panel">
+          <h2>Record payment</h2>
+          <form id="payment-form">
+            <div class="form-grid">
+              <label
+                >Customer<select id="payment-customer" required></select
+              ></label>
+              <label
+                >Unpaid transaction<select
+                  id="payment-transaction-id"
+                  required
+                ></select
+              ></label>
+              <label
+                >Payment method<select id="payment-method" required></select
+              ></label>
+              <label
+                >Amount paid<input
+                  type="number"
+                  id="payment-amount"
+                  step="0.01"
+                  min="0"
+                  required
+              /></label>
+            </div>
+            <button type="submit" class="primary">Record payment</button>
+            <p class="hint" id="payment-msg"></p>
+          </form>
+          <h2>All payments</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Transaction</th>
+                <th>Method</th>
+                <th>Reference</th>
+                <th>Status</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="payments-table"></tbody>
+          </table>
+        </section>
+
+        <!-- STAFF -->
+        <section id="panel-staff" class="panel">
+          <h2>Add staff member</h2>
+          <form id="staff-form">
+            <div class="form-grid">
+              <label
+                >First name<input type="text" id="staff-first-name" required
+              /></label>
+              <label
+                >Last name<input type="text" id="staff-last-name" required
+              /></label>
+              <label
+                >Phone number<input type="text" id="staff-phone" required
+              /></label>
+              <label>Role<select id="staff-role" required></select></label>
+              <label
+                >Username<input type="text" id="staff-new-username" required
+              /></label>
+              <label
+                >Password<input
+                  type="password"
+                  id="staff-new-password"
+                  required
+                  minlength="6"
+              /></label>
+            </div>
+            <button type="submit" class="primary">Add staff</button>
+            <p class="hint" id="staff-msg"></p>
+          </form>
+          <h2>Staff list</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="staff-table"></tbody>
+          </table>
+        </section>
+
+        <!-- REPORTS & AUDIT -->
+        <section id="panel-reports" class="panel">
+          <h2>End of day report</h2>
+          <div class="form-grid">
+            <label>Date<input type="date" id="eod-date" /></label>
+          </div>
+          <button type="button" class="primary" id="btn-run-eod">
+            Run report
+          </button>
+          <div id="eod-output" style="margin-top: 16px"></div>
+
+          <h2>Audit log</h2>
+          <div class="form-grid">
+            <label
+              >Table<input
+                type="text"
+                id="audit-table"
+                placeholder="e.g. reservations"
+            /></label>
+            <label>From<input type="date" id="audit-from" /></label>
+            <label>To<input type="date" id="audit-to" /></label>
+          </div>
+          <button type="button" class="primary" id="btn-run-audit">
+            Filter
+          </button>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Actor</th>
+                <th>Action</th>
+                <th>Table</th>
+                <th>Record</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="audit-table-body"></tbody>
+          </table>
+        </section>
+
+        <!-- NOTIFICATIONS -->
+        <section id="panel-notifications" class="panel">
+          <h2>Notifications</h2>
+          <button type="button" class="primary" id="btn-mark-all-read">
+            Mark all as read
+          </button>
+          <div class="notif-list" id="notif-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>
