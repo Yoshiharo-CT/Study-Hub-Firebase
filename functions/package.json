@@ -1,0 +1,13 @@
+{
+  "name": "study-hub-migration-tools",
+  "private": true,
+  "scripts": {
+    "check": "node --check scripts/migrate-sql-to-firestore.js && node --check scripts/hosting-smoke-test.js",
+    "test:hosting": "cd .. && npx --yes firebase-tools emulators:exec --project demo-study-hub --only hosting \"node functions/scripts/hosting-smoke-test.js\"",
+    "migrate:sql": "node scripts/migrate-sql-to-firestore.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.4.0",
+    "mysql2": "^3.14.1"
+  }
+}

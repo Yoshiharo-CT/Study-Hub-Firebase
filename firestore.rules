@@ -1,0 +1,229 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function activeAccount() {
+      return signedIn() && profile().account_status == 'active';
+    }
+
+    function staff() {
+      return activeAccount() && profile().account_type == 'staff';
+    }
+
+    function can(permission) {
+      return staff() && profile().permissions is list && permission in profile().permissions;
+    }
+
+    function customer() {
+      return activeAccount() && profile().account_type == 'customer';
+    }
+
+    function selfCustomer(customerId) {
+      return customer() && profile().customer_id == customerId;
+    }
+
+    match /users/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list: if false;
+      allow create: if signedIn() && (
+        (request.auth.uid == uid
+          && request.resource.data.account_type == 'customer'
+          && request.resource.data.account_status == 'active'
+          && request.resource.data.customer_id is string
+          && getAfter(/databases/$(database)/documents/customers/$(request.resource.data.customer_id)).data.uid == uid)
+        || (can('staff')
+          && request.resource.data.account_type == 'staff'
+          && request.resource.data.role_id is string
+          && get(/databases/$(database)/documents/staff_roles/$(request.resource.data.role_id)).data.is_active == true
+          && request.resource.data.permissions == get(/databases/$(database)/documents/staff_roles/$(request.resource.data.role_id)).data.permissions)
+      );
+      allow update: if can('staff') && resource.data.account_type == 'staff'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['account_status']);
+      allow delete: if false;
+    }
+
+    match /customers/{customerId} {
+      allow read: if staff() || selfCustomer(customerId);
+      allow create: if (signedIn()
+          && request.resource.data.uid == request.auth.uid
+          && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.customer_id == customerId)
+        || can('customers');
+      allow update: if can('customers');
+      allow delete: if false;
+    }
+
+    match /staff/{staffId} {
+      allow read: if staff();
+      allow create: if can('staff')
+        && request.resource.data.staff_id == staffId
+        && getAfter(/databases/$(database)/documents/users/$(request.resource.data.user_id)).data.staff_id == staffId
+        && getAfter(/databases/$(database)/documents/users/$(request.resource.data.user_id)).data.role_id == request.resource.data.role_id;
+      allow update: if can('staff');
+      allow delete: if false;
+    }
+
+    match /staff_roles/{roleId} {
+      allow read: if staff();
+      allow create, update, delete: if false;
+    }
+
+    match /space_types/{typeId} {
+      allow read: if staff();
+      allow create: if can('spaces');
+      allow update: if can('spaces')
+        || ((can('walkins') || can('sessions'))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['waiting_walkins']));
+      allow delete: if false;
+    }
+
+    match /study_spaces/{spaceId} {
+      allow read: if staff();
+      allow create, delete: if can('spaces');
+      allow update: if can('spaces')
+        || ((can('reservations') || can('sessions'))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reservation_windows', 'status']));
+    }
+
+    match /space_maintenance/{maintenanceId} {
+      allow read: if staff();
+      allow create, update: if can('maintenance') || can('spaces');
+      allow delete: if false;
+    }
+
+    match /reservations/{reservationId} {
+      allow read: if staff();
+      allow create: if can('reservations') && request.resource.data.status == 'pending';
+      allow update: if can('reservations');
+      allow delete: if false;
+    }
+
+    match /space_sessions/{sessionId} {
+      allow read: if staff();
+      allow create: if can('sessions');
+      allow update: if can('sessions')
+        || (can('billing')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['billing_transaction_id']));
+      allow delete: if false;
+    }
+
+    match /session_extensions/{extensionId} {
+      allow read: if staff();
+      allow create: if can('sessions');
+      allow update, delete: if false;
+    }
+
+    match /walkin_queue/{queueId} {
+      allow read: if staff();
+      allow create: if can('walkins');
+      allow update: if can('walkins') || (can('sessions')
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'served_at']));
+      allow delete: if false;
+    }
+
+    match /product_categories/{categoryId} {
+      allow read: if staff();
+      allow create, update: if can('spaces');
+      allow delete: if false;
+    }
+
+    match /products_services/{productId} {
+      allow read: if staff();
+      allow create, update: if can('spaces') || can('orders');
+      allow delete: if false;
+    }
+
+    match /paper_sizes/{paperSizeId} {
+      allow read: if staff();
+      allow create, update: if can('spaces');
+      allow delete: if false;
+    }
+
+    match /print_types/{printTypeId} {
+      allow read: if staff();
+      allow create, update: if can('spaces');
+      allow delete: if false;
+    }
+
+    match /orders/{orderId} {
+      allow read: if staff();
+      allow create: if can('orders');
+      allow update: if can('orders')
+        || (can('billing')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['billing_transaction_id']));
+      allow delete: if false;
+    }
+
+    match /order_items/{itemId} {
+      allow read: if staff();
+      allow create: if can('orders');
+      allow update, delete: if false;
+    }
+
+    match /printing_jobs/{jobId} {
+      allow read: if staff();
+      allow create: if can('orders');
+      allow update, delete: if false;
+    }
+
+    match /promotions/{promotionId} {
+      allow read: if staff();
+      allow create, update: if can('promotions');
+      allow delete: if false;
+    }
+
+    match /billing_transactions/{transactionId} {
+      allow read: if staff();
+      allow create: if can('billing');
+      allow update: if (can('billing')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+        || (can('payments')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'pending_amount', 'verified_amount']));
+      allow delete: if false;
+    }
+
+    match /payments/{paymentId} {
+      allow read: if staff();
+      allow create, update: if can('payments');
+      allow delete: if false;
+    }
+
+    match /payment_methods/{methodId} {
+      allow read: if staff();
+      allow create, update: if can('payments');
+      allow delete: if false;
+    }
+
+    match /receipts/{receiptId} {
+      allow read: if staff();
+      allow create: if can('payments');
+      allow update, delete: if false;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if (staff() && resource.data.recipient_type == 'staff' && profile().staff_id == resource.data.recipient_id)
+        || (customer() && resource.data.recipient_type == 'customer' && profile().customer_id == resource.data.recipient_id);
+      allow create: if can('reservations') || can('billing') || can('payments') || can('sessions');
+      allow update: if ((staff() && resource.data.recipient_type == 'staff' && profile().staff_id == resource.data.recipient_id)
+        || (customer() && resource.data.recipient_type == 'customer' && profile().customer_id == resource.data.recipient_id))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['is_read']);
+      allow delete: if false;
+    }
+
+    match /audit_log/{auditId} {
+      allow read: if can('reports');
+      allow create: if staff();
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

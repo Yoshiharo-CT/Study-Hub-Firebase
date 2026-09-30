@@ -1,9 +1,46 @@
-// Resolves the API folder relative to wherever this project is served from,
-// so it works whether it's at http://localhost/Study%20Hub/ or a subfolder.
+// Resolves the API folder relative to wherever this project is served from.
 const baseApiUrl = (() => {
   const path = window.location.pathname;
   const dir = path.substring(0, path.lastIndexOf("/"));
   return `${dir}/api`;
+})();
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAyadwi4cbli0qX2FXuInsxTYPN71dXguY",
+  authDomain: "study-hub-bf7e1.firebaseapp.com",
+  projectId: "study-hub-bf7e1",
+  storageBucket: "study-hub-bf7e1.firebasestorage.app",
+  messagingSenderId: "373050932793",
+  appId: "1:373050932793:web:9c6a59b7f7edc1114ed7e8",
+};
+
+const firebaseReady = (async () => {
+  const appSdk =
+    await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js");
+  const authSdk =
+    await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js");
+  const firestoreSdk =
+    await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js");
+  const firebaseApi = await import("./firebase-api.js");
+  const app = appSdk.initializeApp(firebaseConfig);
+  const auth = authSdk.getAuth(app);
+  const db = firestoreSdk.getFirestore(app);
+  if (
+    ["localhost", "127.0.0.1"].includes(window.location.hostname) &&
+    window.location.port === "5500"
+  ) {
+    authSdk.connectAuthEmulator(auth, "http://127.0.0.1:9199", {
+      disableWarnings: true,
+    });
+    firestoreSdk.connectFirestoreEmulator(db, "127.0.0.1", 8180);
+  }
+  await new Promise((resolve) => {
+    const unsubscribe = authSdk.onAuthStateChanged(auth, () => {
+      unsubscribe();
+      resolve();
+    });
+  });
+  return { app, appSdk, auth, authSdk, db, firestoreSdk, firebaseApi };
 })();
 
 const themeStorageKey = "study-hub-theme";
@@ -41,37 +78,25 @@ document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
 const apiClient = {
   async post(url, formData) {
     try {
-      const res = await fetch(url, {
-        method: "POST",
-        body: formData,
-        credentials: "same-origin",
-      });
-      const data = await res
-        .json()
-        .catch(() => ({ success: false, message: "Invalid server response." }));
-      return { status: res.status, data };
+      const context = await firebaseReady;
+      const payload = Object.fromEntries(formData.entries());
+      const group = new URL(url, window.location.href).pathname
+        .split("/")
+        .pop()
+        .replace(/\.php$/, "");
+      const result = await context.firebaseApi.handleFirebaseOperation(
+        group,
+        payload.operation,
+        payload,
+        { ...context, firebaseConfig },
+      );
+      const data =
+        result.success === undefined ? { success: true, ...result } : result;
+      return { status: data.status || (data.success ? 200 : 400), data };
     } catch (err) {
       return {
         status: 0,
-        data: { success: false, message: "Network error: " + err.message },
-      };
-    }
-  },
-
-  async get(url) {
-    try {
-      const res = await fetch(url, {
-        method: "GET",
-        credentials: "same-origin",
-      });
-      const data = await res
-        .json()
-        .catch(() => ({ success: false, message: "Invalid server response." }));
-      return { status: res.status, data };
-    } catch (err) {
-      return {
-        status: 0,
-        data: { success: false, message: "Network error: " + err.message },
+        data: { success: false, message: err.message || "Network error." },
       };
     }
   },

@@ -95,7 +95,11 @@ let ME = null; // current staff session
 })();
 
 function applyPermissions() {
-  const perms = (ME.permissions || "").split(",").map((p) => p.trim());
+  const perms = Array.isArray(ME.permissions)
+    ? ME.permissions
+    : String(ME.permissions || "")
+        .split(",")
+        .map((permission) => permission.trim());
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     const perm = btn.dataset.perm;
     if (perm && !perms.includes(perm)) btn.classList.add("hidden");
