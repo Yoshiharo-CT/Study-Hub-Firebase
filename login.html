@@ -39,7 +39,7 @@
             <button type="submit" class="primary">Login</button>
           </form>
 
-          <!-- New accounts are assigned the customer account type automatically. -->
+          
           <form id="form-register" class="login-form">
             <div class="form-grid" style="padding: 0; border: none">
               <label
@@ -110,7 +110,6 @@
         .getElementById("go-member-login")
         .addEventListener("click", () => switchMode("login"));
 
-      // Account type is resolved from the matching username, email, or phone.
       document
         .getElementById("form-login")
         .addEventListener("submit", async function (e) {
@@ -137,7 +136,6 @@
           }
         });
 
-      // New accounts are always registered as customers.
       document
         .getElementById("form-register")
         .addEventListener("submit", async function (e) {

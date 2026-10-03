@@ -1,4 +1,3 @@
-// Resolves the API folder relative to wherever this project is served from.
 const baseApiUrl = (() => {
   const path = window.location.pathname;
   const dir = path.substring(0, path.lastIndexOf("/"));
@@ -22,7 +21,6 @@ const firebaseReady = (async () => {
   const app = appSdk.initializeApp(firebaseConfig);
   const auth = authSdk.getAuth(app);
 
-  // Connect to emulators when running locally
   if (
     ["localhost", "127.0.0.1"].includes(window.location.hostname) &&
     window.location.port === "5500"
@@ -122,7 +120,6 @@ async function request(url, payload, user) {
   return { status: res.status, data };
 }
 
-// Small helper: build a FormData from a plain object, used all over app.js.
 function toFormData(obj) {
   const fd = new FormData();
   Object.entries(obj).forEach(([k, v]) => {

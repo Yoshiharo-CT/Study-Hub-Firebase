@@ -1986,9 +1986,13 @@ async function dispatch(group, operation, input, user) {
 }
 
 async function handleApiRequest(request, response) {
+  response.set("Access-Control-Allow-Origin", "*");
+  response.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  response.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   if (request.method === "OPTIONS") return response.status(204).send("");
   try {
-    const group = (request.path.split("/").pop() || "").replace(/\.php$/, "");
+    const cleanPath = (request.path || "").split("?")[0].replace(/\/+$/, "");
+    const group = (cleanPath.split("/").filter(Boolean).pop() || "").replace(/\.php$/, "");
     const input = request.method === "GET" ? request.query : request.body || {};
     const operation = String(input.operation || "");
     if (!operation) fail("Unknown operation.", 400);

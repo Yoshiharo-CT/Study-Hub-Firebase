@@ -5,4 +5,4 @@ initializeApp();
 
 const { handleApiRequest } = require("./api");
 
-exports.api = onRequest({ cors: false }, handleApiRequest);
+exports.api = onRequest({ cors: true }, handleApiRequest);

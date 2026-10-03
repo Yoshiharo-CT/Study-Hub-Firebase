@@ -43,7 +43,7 @@ h2 {
   margin: 0 0 12px;
 }
 
-/* ---------- Login page ---------- */
+
 .login-shell {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -149,7 +149,7 @@ h2 {
   padding: 4px 0;
 }
 
-/* ---------- Shared form controls ---------- */
+
 input,
 select,
 button {
@@ -217,7 +217,7 @@ button.primary:hover {
   color: var(--muted);
 }
 
-/* ---------- App shell ---------- */
+
 body:has(.sidebar) {
   display: flex;
 }
