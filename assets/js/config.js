@@ -19,13 +19,10 @@ const firebaseReady = (async () => {
     await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js");
   const authSdk =
     await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js");
-<<<<<<< HEAD
-  const firestoreSdk =
-    await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js");
-  const firebaseApi = await import("./firebase-api.js");
   const app = appSdk.initializeApp(firebaseConfig);
   const auth = authSdk.getAuth(app);
-  const db = firestoreSdk.getFirestore(app);
+
+  // Connect to emulators when running locally
   if (
     ["localhost", "127.0.0.1"].includes(window.location.hostname) &&
     window.location.port === "5500"
@@ -33,20 +30,15 @@ const firebaseReady = (async () => {
     authSdk.connectAuthEmulator(auth, "http://127.0.0.1:9199", {
       disableWarnings: true,
     });
-    firestoreSdk.connectFirestoreEmulator(db, "127.0.0.1", 8180);
   }
+
   await new Promise((resolve) => {
     const unsubscribe = authSdk.onAuthStateChanged(auth, () => {
       unsubscribe();
       resolve();
     });
   });
-  return { app, appSdk, auth, authSdk, db, firestoreSdk, firebaseApi };
-=======
-  const app = appSdk.initializeApp(firebaseConfig);
-  const auth = authSdk.getAuth(app);
   return { auth, authSdk };
->>>>>>> 4dba2c479cc71a1b85a56d73b8a823cf1dd36aba
 })();
 
 const themeStorageKey = "study-hub-theme";
@@ -84,23 +76,6 @@ document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
 const apiClient = {
   async post(url, formData) {
     try {
-<<<<<<< HEAD
-      const context = await firebaseReady;
-      const payload = Object.fromEntries(formData.entries());
-      const group = new URL(url, window.location.href).pathname
-        .split("/")
-        .pop()
-        .replace(/\.php$/, "");
-      const result = await context.firebaseApi.handleFirebaseOperation(
-        group,
-        payload.operation,
-        payload,
-        { ...context, firebaseConfig },
-      );
-      const data =
-        result.success === undefined ? { success: true, ...result } : result;
-      return { status: data.status || (data.success ? 200 : 400), data };
-=======
       const { auth, authSdk } = await firebaseReady;
       const payload = Object.fromEntries(formData.entries());
 
@@ -124,7 +99,6 @@ const apiClient = {
       }
 
       return request(url, payload, auth.currentUser);
->>>>>>> 4dba2c479cc71a1b85a56d73b8a823cf1dd36aba
     } catch (err) {
       return {
         status: 0,
@@ -134,8 +108,6 @@ const apiClient = {
   },
 };
 
-<<<<<<< HEAD
-=======
 async function request(url, payload, user) {
   const headers = { "Content-Type": "application/json" };
   if (user) headers.Authorization = `Bearer ${await user.getIdToken()}`;
@@ -150,7 +122,6 @@ async function request(url, payload, user) {
   return { status: res.status, data };
 }
 
->>>>>>> 4dba2c479cc71a1b85a56d73b8a823cf1dd36aba
 // Small helper: build a FormData from a plain object, used all over app.js.
 function toFormData(obj) {
   const fd = new FormData();
